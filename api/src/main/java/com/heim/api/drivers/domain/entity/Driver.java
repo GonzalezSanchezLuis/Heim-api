@@ -2,7 +2,7 @@ package com.heim.api.drivers.domain.entity;
 
 
 import com.heim.api.drivers.domain.enums.DriverStatus;
-import com.heim.api.trip.domain.entity.Trip;
+import com.heim.api.move.domain.entity.Move;
 import com.heim.api.users.domain.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -43,7 +43,7 @@ public class Driver {
 
 
     @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL) // Relación con Trip
-    private List<Trip> trips = new ArrayList<>();
+    private List<Move> trips = new ArrayList<>();
 
     @Override
     public String toString() {

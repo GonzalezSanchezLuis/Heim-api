@@ -1,4 +1,4 @@
-package com.heim.api.trip.exception;
+package com.heim.api.move.exception;
 
 public class BusinessException  extends RuntimeException{
     private  String errorCode;

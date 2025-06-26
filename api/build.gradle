@@ -23,7 +23,6 @@ ext {
 
 dependencies {
 
-
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -42,6 +41,8 @@ dependencies {
 	implementation 'org.springframework.modulith:spring-modulith-starter-jpa'
 	implementation group: 'org.json', name: 'json', version: '20250107'
 	implementation group: 'com.google.firebase', name: 'firebase-admin', version: '9.4.3'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
 
 
 

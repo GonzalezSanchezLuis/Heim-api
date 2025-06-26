@@ -22,6 +22,8 @@ public class NotificationService {
         firebaseNotificationSender.sendNotifications(targetTokens, title, body, data, message);
     }
 
+
+
     private List<String> getTargetTokens(FcmToken.OwnerType ownerType, Long ownerId) {
         return fcmTokenRepository.findAllByOwnerIdAndOwnerType(ownerId, ownerType)
                 .stream()

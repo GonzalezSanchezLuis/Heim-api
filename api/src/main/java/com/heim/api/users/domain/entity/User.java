@@ -1,8 +1,7 @@
 package com.heim.api.users.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.heim.api.drivers.domain.entity.Driver;
-import com.heim.api.trip.domain.entity.Trip;
+import com.heim.api.move.domain.entity.Move;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -41,7 +40,7 @@ public class User {
 
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL) // Relación con Trip
-    private List<Trip> trips = new ArrayList<>();
+    private List<Move> trips = new ArrayList<>();
 
 
 

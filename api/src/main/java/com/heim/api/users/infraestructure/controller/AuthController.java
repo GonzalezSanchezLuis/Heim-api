@@ -1,7 +1,5 @@
 package com.heim.api.users.infraestructure.controller;
 
-import com.heim.api.drivers.domain.entity.Driver;
-import com.heim.api.drivers.infraestructure.repository.DriverRepository;
 import com.heim.api.users.domain.entity.User;
 import com.heim.api.users.infraestructure.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;

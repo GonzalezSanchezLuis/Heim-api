@@ -1,9 +1,9 @@
-package com.heim.api.trip.application.dto;
+package com.heim.api.move.application.dto;
 
-public class TripConfirmationResponse {
+public class MoveConfirmationResponse {
     private String message;
 
-    public TripConfirmationResponse(String message) {
+    public MoveConfirmationResponse(String message) {
         this.message = message;
     }
 

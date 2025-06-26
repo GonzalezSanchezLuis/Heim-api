@@ -1,14 +1,13 @@
-package com.heim.api.trip.domain.entity;
+package com.heim.api.move.domain.entity;
 
 
 import com.heim.api.drivers.domain.entity.Driver;
-import com.heim.api.trip.domain.enums.TripStatus;
+import com.heim.api.move.domain.enums.MoveStatus;
 import com.heim.api.users.domain.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -16,11 +15,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@Table(name = "trips")
-public class Trip {
+@Table(name = "moves")
+public class Move {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long tripId;
+    private Long moveId;
 
     private String origin;
     private String destination;
@@ -38,14 +37,14 @@ public class Trip {
     private LocalDateTime endTime;
 
     @Enumerated(EnumType.STRING)
-    private TripStatus status;
+    private MoveStatus status;
 
     @ManyToOne
     @JoinColumn(name = "driver_id", insertable = false, updatable = false)
     private Driver driver;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")  // Relación con la entidad User
+    @JoinColumn(name = "user_id")
     private User user;
 
 }

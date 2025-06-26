@@ -3,8 +3,8 @@ package com.heim.api.drivers.infraestructure.controller;
 import com.heim.api.drivers.application.dto.*;
 import com.heim.api.drivers.application.service.DriverService;
 import com.heim.api.hazelcast.service.HazelcastGeoService;
-import com.heim.api.trip.application.service.TripService;
-import com.heim.api.trip.domain.entity.Trip;
+import com.heim.api.move.application.service.MoveService;
+import com.heim.api.move.domain.entity.Move;
 import com.heim.api.users.infraestructure.exceptions.EmailAlreadyRegisteredException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -24,13 +24,13 @@ import java.util.Optional;
 public class DriverController {
     private static final Logger logger = LoggerFactory.getLogger(DriverController.class);
     private final DriverService driverService;
-    private final TripService tripService;
+    private final MoveService tripService;
 
 
     @Autowired
     public  DriverController(DriverService driverService,
                              HazelcastGeoService hazelcastGeoService,
-                             TripService tripService){
+                             MoveService tripService){
 
         this.driverService = driverService;
         this.tripService  = tripService;
@@ -139,8 +139,8 @@ public class DriverController {
 
 
     @GetMapping("/driver/trip/{tripId}")
-    public ResponseEntity<Trip> getTripForDriver(@PathVariable Long tripId, @RequestParam Long driverId ){
-        Optional<Trip> tripOptional = tripService.getTripForDriver(tripId, driverId);
+    public ResponseEntity<Move> getTripForDriver(@PathVariable Long tripId, @RequestParam Long driverId ){
+        Optional<Move> tripOptional = tripService.getTripForDriver(tripId, driverId);
         return tripOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
