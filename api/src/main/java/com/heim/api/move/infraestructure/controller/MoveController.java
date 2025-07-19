@@ -3,6 +3,7 @@ package com.heim.api.move.infraestructure.controller;
 import com.heim.api.move.application.dto.*;
 import com.heim.api.move.application.service.MoveService;
 import com.heim.api.move.domain.entity.Move;
+import com.heim.api.move.domain.enums.MoveStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -71,6 +72,11 @@ public class MoveController {
     public ResponseEntity<Move> completeTrip(@RequestBody MovingStatusesDTO movingStatusesDTO) {
         Move move = moveService.completeMove(movingStatusesDTO);
         return move != null ? ResponseEntity.ok(move) : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("get-status/{moveId}")
+    public MoveStatus getMOveStatus(@PathVariable Long moveId){
+        return moveService.getMoveStatus(moveId);
     }
 
 

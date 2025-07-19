@@ -11,9 +11,7 @@ import com.heim.api.hazelcast.service.HazelcastGeoService;
 import com.heim.api.users.domain.entity.User;
 import com.heim.api.users.infraestructure.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.crossstore.ChangeSetPersister;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,7 +106,7 @@ public class DriverService {
 
 
 
-    public Driver updateDriverStatus(Long driverId, DriverStatusRequest request) {
+    public void connectDriver(Long driverId, DriverStatusRequest request) {
         Driver driver = findDriverById(driverId);
 
         driver.setStatus(DriverStatus.CONNECTED);
@@ -119,12 +117,9 @@ public class DriverService {
         // Manejar la ubicación en Hazelcast según el estado del conductor
         handleDriverLocation(driverId, DriverStatus.CONNECTED, request.getLatitude(), request.getLongitude());
 
-        return driver;
     }
 
-
-
-    public Driver driverDisconnected(Long driverId, DriverStatusDisconnectedRequest request) {
+    public void driverDisconnected(Long driverId, DriverStatusDisconnectedRequest request) {
         Driver driver = findDriverById(driverId);
 
         driver.setStatus(DriverStatus.DISCONNECTED);
@@ -135,7 +130,6 @@ public class DriverService {
 
         logger.info("🔴 Conductor {} desconectado", driverId);
 
-        return driver;
     }
 
 
@@ -145,11 +139,21 @@ public class DriverService {
     }
 
 
-    public DriverStatusResponse getDriverStatus(Long userId){
-        Driver driver = driverRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Conductor no encontrado"));
-        logger.info("estado delcondcutor" +driver.getStatus());
+    public DriverStatusResponse getDriverStatus(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!user.getRole().equals("DRIVER")) {
+            throw new RuntimeException("El usuario no es un conductor");
+        }
+
+        Driver driver = driverRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Conductor no encontrado"));
+
+        logger.info("estado del conductor: " + driver.getStatus());
         return new DriverStatusResponse(driver.getId(), driver.getStatus());
     }
+
 
 
     public boolean isDriverAvailable(Long driverId) throws ChangeSetPersister.NotFoundException {

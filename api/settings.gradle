@@ -1,1 +1,5 @@
 rootProject.name = 'api'
+include 'driver', 'user',
+        'price','notification',
+        'move','hazelcast','uth',
+        'fcm'

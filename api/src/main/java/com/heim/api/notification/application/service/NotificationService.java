@@ -22,6 +22,9 @@ public class NotificationService {
         firebaseNotificationSender.sendNotifications(targetTokens, title, body, data, message);
     }
 
+    public void notifyUser(FcmToken.OwnerType ownerType, Long ownerId, String title, String body) {
+        notify(ownerType, ownerId, title, body, null, null);
+    }
 
 
     private List<String> getTargetTokens(FcmToken.OwnerType ownerType, Long ownerId) {

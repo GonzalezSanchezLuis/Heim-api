@@ -11,16 +11,20 @@ import com.heim.api.hazelcast.application.dto.GeoLocation;
 import com.heim.api.hazelcast.service.HazelcastGeoService;
 import com.heim.api.move.application.dto.*;
 import com.heim.api.move.application.mapper.MoveMapper;
+import com.heim.api.move.domain.event.MoveAssignedEvent;
 import com.heim.api.notification.application.service.NotificationService;
 import com.heim.api.move.domain.entity.Move;
 import com.heim.api.move.domain.enums.MoveStatus;
 import com.heim.api.move.infraestructure.repository.MoveRepository;
 import com.heim.api.users.domain.entity.User;
 import com.heim.api.users.infraestructure.repository.UserRepository;
+import com.heim.api.webSocket.application.dto.MoveNotificationDTO;
+import com.heim.api.webSocket.service.MoveSocketNotificationService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -42,6 +46,8 @@ public class MoveService {
     private final MoveCacheService tripCacheService;
     private final DistanceCalculatorService distanceCalculatorService;
     private final MoveMapper moveMapper;
+    private final ApplicationEventPublisher applicationEventPublisher;
+
 
 
     @Autowired
@@ -52,7 +58,8 @@ public class MoveService {
                        HazelcastGeoService hazelcastGeoService,
                        MoveCacheService tripCacheService,
                        DistanceCalculatorService distanceCalculatorService,
-                       MoveMapper moveMapper
+                       MoveMapper moveMapper,
+                        ApplicationEventPublisher applicationEventPublisher
                        ) {
 
         this.moveRepository = moveRepository;
@@ -63,6 +70,7 @@ public class MoveService {
         this.tripCacheService = tripCacheService;
         this.distanceCalculatorService = distanceCalculatorService;
         this.moveMapper = moveMapper;
+        this.applicationEventPublisher = applicationEventPublisher;
 
     }
 
@@ -128,7 +136,7 @@ public class MoveService {
 
         if (existingMove.isPresent()) {
             log.info("Ya existe un viaje similar para este usuario.");
-            return existingMove.get(); // Devuelve el viaje existente en lugar de crear uno nuevo
+            return existingMove.get();
         }
 
         String rawPrice = String.valueOf(moveRequest.getPrice());  // Ejemplo: "5.843,09 COP"
@@ -195,10 +203,11 @@ public class MoveService {
                 .orElseThrow(() -> new EntityNotFoundException("Mudanza no encontrada"));
 
         move.setStatus(MoveStatus.DRIVER_ARRIVED);
-
-       // notificationService.notifyUser(move.getUser(), "🚗 Tu conductor ha llegado al punto de recogida.");
+        notificationService.notifyUser(FcmToken.OwnerType.USER, move.getUser().getUserId(), "\uD83D\uDE9B ¡Tu conductor ha llegado!",
+                "Ya estamos aquí, justo a tiempo para ayudarte a dar este gran paso.");
         moveRepository.save(move);
     }
+
 
     @Transactional
     public void startMove(MovingStatusesDTO movingStatusesDTO){
@@ -207,11 +216,11 @@ public class MoveService {
 
         move.setStartTime(movingStatusesDTO.getTimestamp() != null ? movingStatusesDTO.getTimestamp() : LocalDateTime.now());
 
-       // notificationService.notifyUser(move.getUser(), "📍 Tu mudanza ha comenzado.");
+        notificationService.notifyUser(FcmToken.OwnerType.USER, move.getUser().getUserId(), "\uD83D\uDE9A La mudanza está en marcha",
+                "Todo va según lo planeado. Tu nueva etapa está cada vez más cerca.");
         moveRepository.save(move);
 
     }
-
 
 
     @Transactional
@@ -225,14 +234,23 @@ public class MoveService {
 
             moveRepository.save(move);
 
-            // Notificar al usuario que el viaje ha sido completado
-            sendNotificationToUser(move);
+            notificationService.notifyUser(FcmToken.OwnerType.USER, move.getUser().getUserId(), "\uD83C\uDFE1 ¡Tu mudanza fue completada con éxito!",
+                    "¡Gracias por confiar en nosotros para este gran paso! Te deseamos lo mejor en tu nuevo hogar. \uD83E\uDDE1");
 
             return move;
         }
 
         return null;
     }
+
+    public MoveStatus getMoveStatus(Long moveId) {
+        Move move = moveRepository.findById(moveId)
+                .orElseThrow(() -> new EntityNotFoundException("Mudanza no encontrada"));
+        return move.getStatus();
+    }
+
+
+
 
 
 
@@ -244,7 +262,7 @@ public class MoveService {
 
         switch (move.getStatus()) {
             case ASSIGNED:
-                message = "¡Tu viaje ha sido aceptado por un conductor!";
+                message = "\uD83D\uDE9B ¡Ya vamos por ti!";
                 break;
             case MOVE_COMPLETE:
                 message = "¡Tu viaje ha sido completado!";
@@ -257,7 +275,7 @@ public class MoveService {
        notificationService.notify(
                FcmToken.OwnerType.USER,
                move.getUser().getUserId(),
-               "Actualización de tu viaje", "Tu viaje ha sido aceptado.",
+               "\uD83D\uDE9B ¡Tu mudanza ya tiene conductor!", "Tranquilo, ya estamos en camino para ayudarte a empezar esta nueva etapa.",
                data,
                message
                );
@@ -319,12 +337,17 @@ public class MoveService {
                 notificationService.notify(
                         FcmToken.OwnerType.DRIVER,
                         driverId,
-                        "Nuevo viaje disponible",         // Título
-                        "Tienes un nuevo viaje",          // Cuerpo (podrías personalizarlo más)
+                        "\uD83D\uDEA8 ¡Una nueva mudanza necesita de ti!",         // Título
+                        "Tu ayuda puede marcar la diferencia para alguien que se muda hoy.",          // Cuerpo (podrías personalizarlo más)
                         moveData,                         // Datos
-                        message                           // Mensaje adicional
-                );
+                        message);
+
+                MoveDTO moveDTO =  moveMapper.toDTO(move);
+
+                MoveNotificationDTO notification = new MoveNotificationDTO(moveDTO);
+                applicationEventPublisher.publishEvent(new MoveAssignedEvent(notification));
                 tripCacheService.incrementNotificationCount(move.getMoveId(), driverId);
+
             }else {
                 log.info("No se notificará más al conductor {} para el viaje {} para evitar spam.", driverId, move.getMoveId());
             }
@@ -337,6 +360,8 @@ public class MoveService {
             TimeAndDistanceDestinationResponse destinationResponse,
             DriverLocation driverLocation) {
         Map<String, String> moveData = new HashMap<>();
+
+        // Datos de la mudanza
         moveData.put("moveId", String.valueOf(move.getMoveId()));
         moveData.put("origin", move.getOrigin());
         moveData.put("destination", move.getDestination());
@@ -344,18 +369,19 @@ public class MoveService {
         moveData.put("originLng", String.valueOf(move.getOriginLng()));
         moveData.put("destinationLat", String.valueOf(move.getDestinationLat()));
         moveData.put("destinationLng", String.valueOf(move.getDestinationLng()));
-        moveData.put("typeOfMove", String.valueOf(move.getTypeOfMove()));
+        moveData.put("typeOfMove", String.valueOf(move.getTypeOfMove().name()));
         moveData.put("price", move.getPrice().toPlainString());
         moveData.put("paymentMethod", String.valueOf(move.getPaymentMethod()));
 
         log.info("DATOS DE LA DISTANCIA {}" , distanceResponse);
 
+        // Datos de distancia
         moveData.put("distance", distanceResponse.getDistance());
         moveData.put("estimatedTimeOfArrival", distanceResponse.getEstimatedTimeOfArrival());
-
         moveData.put("distanceToDestination", destinationResponse.getDistanceToDestination());
         moveData.put("timeToDestination", destinationResponse.getTimeToDestination());
 
+        // Coordenadas del conductor
         moveData.put("driverLat", String.valueOf(driverLocation.getLatitude()));
         moveData.put("driverLng", String.valueOf(driverLocation.getLongitude()));
         moveData.put("originLat", String.valueOf(move.getOriginLat()));
@@ -364,30 +390,42 @@ public class MoveService {
         moveData.put("destinationLng", String.valueOf(move.getDestinationLng()));
         moveData.put("role", "DRIVER");
 
+        //DATOS DEL USUARIO
+        if (move.getUser() != null) {
+            moveData.put("userName", move.getUser().getFullName());
+            moveData.put("avatarProfile", move.getUser().getUrlAvatarProfile());
 
+          //  moveData.put("userPhone", move.getUser().getPhone());
+        }
         return moveData;
     }
 
-    private Map<String, String> buildMoveDataForUser(
-            Move move,
-            GeoLocation driverLocation
-            ) {
+    private Map<String, String> buildMoveDataForUser(Move move, GeoLocation driverLocation) {
         Map<String, String> data = new HashMap<>();
-        logger.info("COORDENADAS DEL CONDUCTOR ENVIADAS AL CLIENTE {}", data);
-
         data.put("moveId", move.getMoveId().toString());
         data.put("status", move.getStatus().toString());
 
         if (move.getDriver() != null) {
-            logger.info("📍 LOCATION: {}, {}", driverLocation.getLatitude(), driverLocation.getLongitude());
+            Driver driver = move.getDriver();
+            User user = driver.getUser();
+
             data.put("driverLat", String.valueOf(driverLocation.getLatitude()));
             data.put("driverLng", String.valueOf(driverLocation.getLongitude()));
-            data.put("role", "USER");
-        }
 
+            // Datos del vehículo
+            //data.put("enrollVehicle", driver.getEnrollVehicle());
+         //   data.put("vehicleType", driver.getVehicleType());
+
+            // Datos personales del usuario que es conductor
+            data.put("driverName", user.getFullName());
+           data.put("driverPhone", user.getPhone());
+            data.put("driverImageUrl", user.getUrlAvatarProfile());
+
+        }
 
         return data;
     }
+
 
 
     public List<Move> getTripsByUser(Long userId) {

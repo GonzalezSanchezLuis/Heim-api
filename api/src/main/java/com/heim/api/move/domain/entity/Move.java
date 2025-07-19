@@ -3,6 +3,7 @@ package com.heim.api.move.domain.entity;
 
 import com.heim.api.drivers.domain.entity.Driver;
 import com.heim.api.move.domain.enums.MoveStatus;
+import com.heim.api.price.domain.MoveType;
 import com.heim.api.users.domain.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,7 +28,8 @@ public class Move {
     private Double originLng;
     private Double destinationLat;
     private Double destinationLng;
-    private String typeOfMove;
+    @Enumerated(EnumType.STRING)
+    private MoveType typeOfMove;
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
     private String paymentMethod;

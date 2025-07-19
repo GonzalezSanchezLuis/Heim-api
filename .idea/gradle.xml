@@ -16,6 +16,14 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$/api" />
+            <option value="$PROJECT_DIR$/api/driver" />
+            <option value="$PROJECT_DIR$/api/fcm" />
+            <option value="$PROJECT_DIR$/api/hazelcast" />
+            <option value="$PROJECT_DIR$/api/move" />
+            <option value="$PROJECT_DIR$/api/notification" />
+            <option value="$PROJECT_DIR$/api/price" />
+            <option value="$PROJECT_DIR$/api/user" />
+            <option value="$PROJECT_DIR$/api/uth" />
           </set>
         </option>
       </GradleProjectSettings>

@@ -59,7 +59,6 @@ public class UserService {
 
 
     public UserResponse updateUserData(Long userId, UserRequest userRequest) {
-        // Buscar el usuario por ID
         User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("Usuario no encontrado"));
         if (userRequest.getPassword() != null &&  !userRequest.getPassword().isEmpty()){
             userRequest.setPassword(bcryptPasswordEncoder.encode(userRequest.getPassword()));

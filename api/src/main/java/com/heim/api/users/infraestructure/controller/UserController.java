@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-
-
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/api/v1/users/")
@@ -69,9 +67,8 @@ public class UserController {
     public ResponseEntity<UserResponse> updatedUserData(@PathVariable Long userId, @RequestBody UserRequest userRequest) {
         try {
             if (userRequest == null) {
-                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST); // Mala solicitud si los datos están vacíos
+                return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
             }
-            // Llamada al servicio para actualizar el usuario
             UserResponse updatedUser = userService.updateUserData(userId, userRequest);
 
             return new ResponseEntity<>(updatedUser, HttpStatus.OK);

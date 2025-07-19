@@ -1,16 +1,16 @@
 package com.heim.api.payment.application.service;
 
 
-import com.heim.api.payment.application.dto.PayRequest;
-import org.springframework.beans.factory.annotation.Value;
+import com.heim.api.payment.application.dto.PaymentRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriComponentsBuilder;
-import java.net.URI;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class PaymentService {
 
-    @Value("${epayco.public_key}")
+  /*  @Value("${epayco.public_key}")
     private String publicKey;
 
     @Value("${epayco.confirmation_url}")
@@ -18,6 +18,8 @@ public class PaymentService {
 
     @Value("${epayco.response_url}")
     private String responseUrl;
+
+
 
     public String generatePayment(PayRequest request) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://checkout.epayco.co/checkout.php")
@@ -40,6 +42,37 @@ public class PaymentService {
 
         URI uri = builder.build().encode().toUri();
         return uri.toString();
+    } */
+
+    public String generateCheckoutUrl(PaymentRequest request) {
+        String URL_BASE = "https://checkout.epayco.co/checkout.php";
+        StringBuilder url = new StringBuilder(URL_BASE + "?");
+
+        String PUBLIC_KEY = "43a7d7ae21e91208f9d86bc760941c30";
+        url.append("public_key=").append(PUBLIC_KEY);
+        url.append("&amount=").append(request.getAmount());
+        url.append("&name=").append(encode(request.getName()));
+        url.append("&description=").append(encode(request.getDescription()));
+        url.append("&currency=").append(request.getCurrency());
+        url.append("&country=CO");
+        url.append("&invoice=").append(request.getInvoice());
+        url.append("&email_billing=").append(request.getEmail());
+        url.append("&lang=es");
+        url.append("&tax=0");
+        url.append("&tax_base=0");
+        url.append("&method=").append(request.getMethod()); // Nequi, etc.
+        url.append("&url_response=https://tusitio.com/respuesta");
+        url.append("&url_confirmation=https://tusitio.com/confirmacion");
+
+        return url.toString();
+    }
+
+    private String encode(String value) {
+        try {
+            return URLEncoder.encode(value, StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            return value;
+        }
     }
 
 

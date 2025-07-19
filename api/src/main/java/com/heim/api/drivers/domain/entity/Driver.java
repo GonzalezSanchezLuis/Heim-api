@@ -42,7 +42,7 @@ public class Driver {
 
 
 
-    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL) // Relación con Trip
+    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL)
     private List<Move> trips = new ArrayList<>();
 
     @Override

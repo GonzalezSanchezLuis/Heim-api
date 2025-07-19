@@ -4,8 +4,7 @@ package com.heim.api.users.application.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.ArrayList;
-import java.util.List;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,6 +15,7 @@ public class UserResponse {
     private String email;
     private String phone;
     private String  document;
+    private String  urlAvatarProfile;
     private String role;
     private String createdAt;
     private boolean active;

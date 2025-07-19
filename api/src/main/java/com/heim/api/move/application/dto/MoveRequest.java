@@ -1,5 +1,6 @@
 package com.heim.api.move.application.dto;
 
+import com.heim.api.price.domain.MoveType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,7 @@ public class MoveRequest {
     private Double originLng;
     private Double destinationLat;
     private Double destinationLng;
-    private String typeOfMove;
+    private MoveType typeOfMove;
     private BigDecimal price;
     private String paymentMethod;
 }

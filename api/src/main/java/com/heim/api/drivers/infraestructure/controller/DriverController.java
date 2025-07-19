@@ -108,7 +108,7 @@ public class DriverController {
     @PutMapping("/connect/{driverId}")
     public ResponseEntity<Map<String, String>> updateStatus(@PathVariable Long driverId,
                                                              @RequestBody DriverStatusRequest request) {
-        driverService.updateDriverStatus(driverId, request);
+        driverService.connectDriver(driverId, request);
         logger.info("🔄 Estado actualizado para el conductor {}", driverId);
         return ResponseEntity.ok(buildResponse(SUCCESS, STATUS_UPDATED));
     }

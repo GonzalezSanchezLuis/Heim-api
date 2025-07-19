@@ -2,6 +2,7 @@ package com.heim.api.price.service;
 
 import com.heim.api.price.application.dto.PriceRequest;
 import com.heim.api.price.application.dto.PriceResponse;
+import com.heim.api.price.domain.MoveType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,10 +66,15 @@ public class PriceService {
             double distanceKm = element.getJSONObject("distance").getDouble("value") / 1000.0;
             double timeMin = element.getJSONObject("duration").getDouble("value") / 60.0;
 
-            double RATE_BASE = 40.000;
-            double COST_BY_KM = 1.500;
-            double COST_BY_MIN = 800;
-            double calculatedPrice = RATE_BASE + (COST_BY_KM * distanceKm) + (COST_BY_MIN * timeMin);
+            /*double RATE_BASE = 25000;
+            double COST_BY_KM = 3000;
+            double COST_BY_MIN = 400; */
+
+           // double calculatedPrice = RATE_BASE + (COST_BY_KM * distanceKm) + (COST_BY_MIN * timeMin);
+          //  BigDecimal finalPrice = BigDecimal.valueOf(calculatedPrice).setScale(2, RoundingMode.HALF_UP);
+
+            MoveType moveType = priceRequest.getTypeOfMove();
+            double calculatedPrice = calculatePriceByMoveType(moveType, distanceKm, timeMin);
             BigDecimal finalPrice = BigDecimal.valueOf(calculatedPrice).setScale(2, RoundingMode.HALF_UP);
 
             // 2. Obtener ruta detallada con Directions API
@@ -121,5 +127,32 @@ public class PriceService {
         }
     }
 
+    private double calculatePriceByMoveType(MoveType moveType, double distanceKm, double timeMin) {
+        double rateBase;
+        double costByKm;
+        double costByMin;
+
+        switch (moveType) {
+            case PEQUENA:
+                rateBase = 20000;
+                costByKm = 1500;
+                costByMin = 300;
+                break;
+            case MEDIANA:
+                rateBase = 30000;
+                costByKm = 2500;
+                costByMin = 400;
+                break;
+            case GRANDE:
+                rateBase = 40000;
+                costByKm = 3500;
+                costByMin = 500;
+                break;
+            default:
+                throw new IllegalArgumentException("Tipo de mudanza no válido: " + moveType);
+        }
+
+        return rateBase + (costByKm * distanceKm) + (costByMin * timeMin);
+    }
 
 }

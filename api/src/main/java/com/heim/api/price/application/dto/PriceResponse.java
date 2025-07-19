@@ -20,7 +20,7 @@ public class PriceResponse {
     public PriceResponse(BigDecimal price,double distanceKm, double timeMin, List<Map<String, Double>> route) {
         this.price = price;
         DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(Locale.ENGLISH);
-        DecimalFormat decimalFormat = new DecimalFormat("#0.00", symbols);
+        DecimalFormat decimalFormat = new DecimalFormat("#,##0.00", symbols);
         this.formattedPrice = decimalFormat.format(price);
         this.distanceKm = distanceKm;
         this.timeMin = timeMin;
