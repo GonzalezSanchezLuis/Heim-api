@@ -1,12 +1,13 @@
 package com.heim.api.webSocket.infraestructure.listener;
 
-
-import com.heim.api.move.domain.entity.Move;
-import com.heim.api.move.domain.event.MoveAssignedEvent;
+import com.heim.api.webSocket.domain.entity.event.MoveAssignedEvent;
+import com.heim.api.webSocket.application.dto.MoveNotificationDTO;
 import com.heim.api.webSocket.service.MoveSocketNotificationService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class MoveSocketEventListener {
     private final MoveSocketNotificationService notificationService;
@@ -17,7 +18,8 @@ public class MoveSocketEventListener {
 
     @EventListener
     public void handleMoveAssignedEvent(MoveAssignedEvent event) {
-        Move move = event.getMove();
-        notificationService.notifyDriver(move);
+        MoveNotificationDTO notificationDTO = event.getNotification();
+        log.info("Evento MoveAssignedEvent disparado para la mudanza ID: {}", notificationDTO.getMove().getMoveId());
+        notificationService.notifyDriver(notificationDTO);
     }
 }

@@ -1,4 +1,4 @@
-package com.heim.api.move.domain.event;
+package com.heim.api.webSocket.domain.entity.event;
 
 import com.heim.api.webSocket.application.dto.MoveNotificationDTO;
 import lombok.Data;

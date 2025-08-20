@@ -25,6 +25,13 @@ public class MoveDTO {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private MoveStatus status;
+    private String distance;
+    private String estimatedTimeOfArrival;
+    private String distanceToDestination;
+    private String timeToDestination;
+    private String avatarProfile;
+    private String enrollVehicle;
+    private String vehicleType;
     private Long driverId;
     private Long userId;
 }

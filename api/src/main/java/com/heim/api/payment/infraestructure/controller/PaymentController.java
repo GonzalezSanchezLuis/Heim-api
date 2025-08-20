@@ -21,18 +21,11 @@ public class PaymentController {
         this.paymentService = paymentService;
 
     }
+    
 
-   /* @PostMapping("create")
-    public ResponseEntity<PayResponse> createPayment(@RequestBody PayRequest payRequest){
-       String paymentUrl = paymentService.generatePayment(payRequest);
-        return ResponseEntity.ok(new PayResponse(paymentUrl));
-
-    }*/
-
-    @PostMapping("generate")
-    public ResponseEntity<?> generatePayment(@Valid @RequestBody PaymentRequest request) {
-        String checkoutUrl = paymentService.generateCheckoutUrl(request);
-        return ResponseEntity.ok(Map.of("checkoutUrl", checkoutUrl));
+    @PostMapping("/create")
+    public String createPayment(@RequestBody PaymentRequest request) throws Exception {
+        return paymentService.createPaymentLink(request);
     }
 
 }

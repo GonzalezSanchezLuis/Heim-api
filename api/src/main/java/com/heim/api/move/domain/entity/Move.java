@@ -21,7 +21,6 @@ public class Move {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long moveId;
-
     private String origin;
     private String destination;
     private Double originLat;
@@ -42,7 +41,7 @@ public class Move {
     private MoveStatus status;
 
     @ManyToOne
-    @JoinColumn(name = "driver_id", insertable = false, updatable = false)
+    @JoinColumn(name = "driver_id")
     private Driver driver;
 
     @ManyToOne

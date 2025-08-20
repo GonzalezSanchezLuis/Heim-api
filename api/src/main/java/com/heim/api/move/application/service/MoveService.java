@@ -11,7 +11,8 @@ import com.heim.api.hazelcast.application.dto.GeoLocation;
 import com.heim.api.hazelcast.service.HazelcastGeoService;
 import com.heim.api.move.application.dto.*;
 import com.heim.api.move.application.mapper.MoveMapper;
-import com.heim.api.move.domain.event.MoveAssignedEvent;
+import com.heim.api.payment.application.dto.PaymentResponse;
+import com.heim.api.webSocket.domain.entity.event.MoveAssignedEvent;
 import com.heim.api.notification.application.service.NotificationService;
 import com.heim.api.move.domain.entity.Move;
 import com.heim.api.move.domain.enums.MoveStatus;
@@ -19,7 +20,9 @@ import com.heim.api.move.infraestructure.repository.MoveRepository;
 import com.heim.api.users.domain.entity.User;
 import com.heim.api.users.infraestructure.repository.UserRepository;
 import com.heim.api.webSocket.application.dto.MoveNotificationDTO;
-import com.heim.api.webSocket.service.MoveSocketNotificationService;
+import com.heim.api.webSocket.domain.entity.event.MoveAssignedUserEvent;
+import com.heim.api.webSocket.domain.entity.event.MoveFinishedEvent;
+import com.heim.api.webSocket.infraestructure.listener.MoveNotificationUserFactory;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +50,7 @@ public class MoveService {
     private final DistanceCalculatorService distanceCalculatorService;
     private final MoveMapper moveMapper;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final MoveNotificationUserFactory moveNotificationUserFactory;
 
 
 
@@ -59,7 +63,8 @@ public class MoveService {
                        MoveCacheService tripCacheService,
                        DistanceCalculatorService distanceCalculatorService,
                        MoveMapper moveMapper,
-                        ApplicationEventPublisher applicationEventPublisher
+                        ApplicationEventPublisher applicationEventPublisher,
+                       MoveNotificationUserFactory moveNotificationUserFactory
                        ) {
 
         this.moveRepository = moveRepository;
@@ -71,6 +76,7 @@ public class MoveService {
         this.distanceCalculatorService = distanceCalculatorService;
         this.moveMapper = moveMapper;
         this.applicationEventPublisher = applicationEventPublisher;
+        this.moveNotificationUserFactory = moveNotificationUserFactory;
 
     }
 
@@ -237,6 +243,15 @@ public class MoveService {
             notificationService.notifyUser(FcmToken.OwnerType.USER, move.getUser().getUserId(), "\uD83C\uDFE1 ¡Tu mudanza fue completada con éxito!",
                     "¡Gracias por confiar en nosotros para este gran paso! Te deseamos lo mejor en tu nuevo hogar. \uD83E\uDDE1");
 
+            PaymentResponse paymentResponse = new PaymentResponse();
+            paymentResponse.setPaymentURL("https://api.wava.co/pay/");
+            paymentResponse.setPaymentMethod(move.getPaymentMethod());
+            paymentResponse.setAmount(move.getPrice());
+            paymentResponse.setCurrency("COP");
+            paymentResponse.setTripId(move.getMoveId());
+
+            MoveFinishedEvent event = new MoveFinishedEvent(move.getMoveId(),paymentResponse);
+            applicationEventPublisher.publishEvent(event);
             return move;
         }
 
@@ -248,10 +263,6 @@ public class MoveService {
                 .orElseThrow(() -> new EntityNotFoundException("Mudanza no encontrada"));
         return move.getStatus();
     }
-
-
-
-
 
 
     private void sendNotificationToUser(Move move) {
@@ -271,6 +282,9 @@ public class MoveService {
                 message = "Actualización de tu viaje";
         }
 
+        User driverUser = move.getDriver().getUser();
+
+
 
        notificationService.notify(
                FcmToken.OwnerType.USER,
@@ -280,6 +294,10 @@ public class MoveService {
                message
                );
 
+
+        MoveNotificationUserResponse moveNotification = moveNotificationUserFactory.build(move);
+        applicationEventPublisher.publishEvent(new MoveAssignedUserEvent(moveNotification, move.getUser().getUserId()));
+        logger.info("Enviando datos el cliente por WEBSOCKET: {}",moveNotification);
     }
 
     private void notifyDriversLimited(Move move, List<Long> nearbyDrivers){
@@ -337,16 +355,29 @@ public class MoveService {
                 notificationService.notify(
                         FcmToken.OwnerType.DRIVER,
                         driverId,
-                        "\uD83D\uDEA8 ¡Una nueva mudanza necesita de ti!",         // Título
-                        "Tu ayuda puede marcar la diferencia para alguien que se muda hoy.",          // Cuerpo (podrías personalizarlo más)
-                        moveData,                         // Datos
+                        "\uD83D\uDEA8 ¡Una nueva mudanza necesita de ti!",
+                        "Tu ayuda puede marcar la diferencia para alguien que se muda hoy.",
+                        moveData,
                         message);
 
                 MoveDTO moveDTO =  moveMapper.toDTO(move);
+                String userAvatar  = moveDTO.getAvatarProfile();
+                TimeAndDistanceDestinationResponse destinationData = distancesToDestination.get(driverId);
+                if (destinationData != null) {
+                   moveDTO.setDistanceToDestination(destinationData.getTimeToDestination());
+                   moveDTO.setTimeToDestination(destinationData.getDistanceToDestination());
+                 }
+
+                TimeAndDistanceOriginResponse originData = driverDistances.get(driverId);
+                if (originData != null) {
+                    moveDTO.setEstimatedTimeOfArrival(originData.getEstimatedTimeOfArrival());
+                    moveDTO.setDistance(originData.getDistance());
+                }
 
                 MoveNotificationDTO notification = new MoveNotificationDTO(moveDTO);
-                applicationEventPublisher.publishEvent(new MoveAssignedEvent(notification));
+                applicationEventPublisher.publishEvent(new MoveAssignedEvent(notification)); 
                 tripCacheService.incrementNotificationCount(move.getMoveId(), driverId);
+                logger.info("ENVIANDO DATOS DE LA MUDANZA MEDIANTE WEBSOCKET {}", moveDTO);
 
             }else {
                 log.info("No se notificará más al conductor {} para el viaje {} para evitar spam.", driverId, move.getMoveId());
