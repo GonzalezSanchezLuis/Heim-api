@@ -8,8 +8,6 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface DriverMapper {
-
-
     @Mapping(target = "driverId", source = "id")
     @Mapping(target = "fullName", source = "user.fullName")
     @Mapping(target = "email", source = "user.email")
@@ -21,7 +19,6 @@ public interface DriverMapper {
     @Mapping(target = "active", source = "user.active")
     @Mapping(target = "createdAt", source = "createdAt")
     DriverResponse toResponse(Driver driver);
-
 
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "id", ignore = true)

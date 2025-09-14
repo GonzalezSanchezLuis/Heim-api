@@ -11,4 +11,5 @@ public class MoveNotificationUserResponse {
     private String enrollVehicle;
     private String vehicleType;
     private String driverImageUrl;
+    private Long moveId;
 }

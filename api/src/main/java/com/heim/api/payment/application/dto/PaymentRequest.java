@@ -1,34 +1,30 @@
 package com.heim.api.payment.application.dto;
 
-import jakarta.validation.constraints.Email;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.heim.api.users.application.dto.UserPaymentRequest;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentRequest {
-
-    @NotBlank(message = "El nombre es obligatorio")
-    private String name;
-
     @NotBlank(message = "La descripción es obligatoria")
     private String description;
 
-    @NotBlank(message = "La moneda es obligatoria")
-    private String currency;
-
-    @NotBlank(message = "El número de factura es obligatorio")
-    private String invoice;
+    @JsonProperty("redirect_link")
+    private String redirectLink;
 
     @NotBlank(message = "El monto es obligatorio")
-    private String amount;
+    private BigDecimal amount;
 
-    @Email(message = "El correo no es válido")
-    @NotBlank(message = "El correo es obligatorio")
-    private String email;
+    @JsonProperty("user")
+    private UserPaymentRequest userPaymentRequest;
 
-    private String method; // puede ser null si es opcional
+    @JsonProperty("order_key")
+    private String  orderKey;
+
 }

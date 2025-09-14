@@ -1,6 +1,7 @@
 package com.heim.api.payment.application.service;
 
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.heim.api.payment.application.dto.PaymentRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -32,11 +33,16 @@ public class PaymentService {
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
+            assert response.body() != null;
+            String responseBody =  response.body().string();
+            JsonNode rootNode = objectMapper.readTree(responseBody);
+            String paymentLink = rootNode.get("result").get("link").asText();
+
             if (!response.isSuccessful()) {
                 throw new RuntimeException("Error en Wava API: " + response.code() + " " + response.message());
             }
-            assert response.body() != null;
-            return response.body().string();
+
+            return paymentLink;
         }
     }
 

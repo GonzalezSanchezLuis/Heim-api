@@ -1,6 +1,7 @@
 package com.heim.api.drivers.domain.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.heim.api.drivers.domain.enums.DriverStatus;
 import com.heim.api.move.domain.entity.Move;
 import com.heim.api.users.domain.entity.User;
@@ -33,6 +34,7 @@ public class Driver {
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @PrePersist

@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/move/")
 @CrossOrigin("*")
@@ -74,11 +76,30 @@ public class MoveController {
         return move != null ? ResponseEntity.ok(move) : ResponseEntity.notFound().build();
     }
 
+
     @GetMapping("get-status/{moveId}")
     public MoveStatus getMOveStatus(@PathVariable Long moveId){
         return moveService.getMoveStatus(moveId);
     }
 
+    @GetMapping("{driverId}/history")
+    public ResponseEntity<List<MovingHistoryDTO>> getMovingHistoryByDriverId(@PathVariable Long driverId){
+        List<MovingHistoryDTO> history = moveService.getMovingHistoryByDriverId(driverId);
+        return ResponseEntity.ok(history);
+    }
+
+    @GetMapping("{driverId}/summary")
+    public List<MoveSummaryDTO> findSummaryMoves(@PathVariable Long driverId){
+      return moveService.findAllSummaries(driverId);
+
+    }
+
+    @GetMapping("{moveId}/details")
+    public ResponseEntity<MoveDetailsDTO> getMoveDetails(@PathVariable Long moveId) {
+        MoveDetailsDTO details = moveService.findMoveDetails(moveId);
+        // Retorna un 200 OK con el DTO en el cuerpo de la respuesta
+        return ResponseEntity.ok(details);
+    }
 
 }
 

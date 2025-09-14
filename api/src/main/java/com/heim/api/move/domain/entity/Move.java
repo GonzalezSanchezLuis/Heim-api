@@ -1,6 +1,7 @@
 package com.heim.api.move.domain.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.heim.api.drivers.domain.entity.Driver;
 import com.heim.api.move.domain.enums.MoveStatus;
 import com.heim.api.price.domain.MoveType;
@@ -37,15 +38,20 @@ public class Move {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
+    private String distanceKm;
+    private String durationMin;
+
     @Enumerated(EnumType.STRING)
     private MoveStatus status;
 
     @ManyToOne
     @JoinColumn(name = "driver_id")
+    @JsonIgnore
     private Driver driver;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
 }

@@ -14,7 +14,6 @@ public interface MoveRepository extends CrudRepository<Move, Long> {
     Optional<Move> findByMoveIdAndDriver_Id(@Param("moveId") Long moveId, @Param("driverId") Long driverId);
     List<Move> findByDriverIdAndStatus(Long driverId, MoveStatus status);
     List<Move> findByUser_UserIdAndStatus(Long userId, MoveStatus status);
-
     Optional<Move> findByUser_UserIdAndOriginAndDestinationAndStatus(Long userId, String origin, String destination, MoveStatus status);
 }
 

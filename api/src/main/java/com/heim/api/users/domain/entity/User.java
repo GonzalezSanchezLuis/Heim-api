@@ -1,5 +1,6 @@
 package com.heim.api.users.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.heim.api.drivers.domain.entity.Driver;
 import com.heim.api.move.domain.entity.Move;
 import jakarta.persistence.*;
@@ -39,8 +40,8 @@ public class User {
     }
 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL) // Relación con Trip
-    private List<Move> trips = new ArrayList<>();
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Move> moves = new ArrayList<>();
 
 
 

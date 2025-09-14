@@ -19,5 +19,7 @@ public class MoveRequest {
     private Double destinationLng;
     private MoveType typeOfMove;
     private BigDecimal price;
+    private String distanceKm;
+    private String estimatedTime;
     private String paymentMethod;
 }

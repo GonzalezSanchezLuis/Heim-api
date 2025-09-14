@@ -17,6 +17,7 @@ public class MoveNotificationUserFactory {
                 .driverImageUrl(driverUser.getUrlAvatarProfile())
                 .enrollVehicle(move.getDriver().getEnrollVehicle())
                 .vehicleType(move.getDriver().getVehicleType())
+                .moveId(move.getMoveId())
                 .build();
     }
 }

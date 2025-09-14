@@ -11,9 +11,11 @@ import java.math.BigDecimal;
 public class PaymentResponse {
    private  String paymentURL;
    private String paymentMethod;
-   private String paymentInfo;
    private BigDecimal amount;
    private String currency;
-   private Long tripId;
-
+   private Long moveId;
+    private String origin;
+    private String destination;
+    private String distanceKm;
+    private String  durationMin;
 }

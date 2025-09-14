@@ -6,18 +6,23 @@ import com.heim.api.drivers.application.dto.TimeAndDistanceOriginResponse;
 import com.heim.api.drivers.application.service.DistanceCalculatorService;
 import com.heim.api.drivers.domain.entity.Driver;
 import com.heim.api.drivers.infraestructure.repository.DriverRepository;
+import com.heim.api.exceptions.NotFoundException;
 import com.heim.api.fcm.domain.entity.FcmToken;
 import com.heim.api.hazelcast.application.dto.GeoLocation;
 import com.heim.api.hazelcast.service.HazelcastGeoService;
 import com.heim.api.move.application.dto.*;
 import com.heim.api.move.application.mapper.MoveMapper;
+import com.heim.api.move.application.mapper.MoveSummaryMapper;
+import com.heim.api.move.application.mapper.MovingHistoryMapper;
+import com.heim.api.payment.application.dto.PaymentRequest;
 import com.heim.api.payment.application.dto.PaymentResponse;
+import com.heim.api.payment.application.service.PaymentService;
+import com.heim.api.users.application.dto.UserPaymentRequest;
 import com.heim.api.webSocket.domain.entity.event.MoveAssignedEvent;
 import com.heim.api.notification.application.service.NotificationService;
 import com.heim.api.move.domain.entity.Move;
 import com.heim.api.move.domain.enums.MoveStatus;
 import com.heim.api.move.infraestructure.repository.MoveRepository;
-import com.heim.api.users.domain.entity.User;
 import com.heim.api.users.infraestructure.repository.UserRepository;
 import com.heim.api.webSocket.application.dto.MoveNotificationDTO;
 import com.heim.api.webSocket.domain.entity.event.MoveAssignedUserEvent;
@@ -26,10 +31,12 @@ import com.heim.api.webSocket.infraestructure.listener.MoveNotificationUserFacto
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,6 +58,8 @@ public class MoveService {
     private final MoveMapper moveMapper;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final MoveNotificationUserFactory moveNotificationUserFactory;
+    private final PaymentService paymentService;
+    private final MovingHistoryMapper movingHistoryMapper;
 
 
 
@@ -64,7 +73,9 @@ public class MoveService {
                        DistanceCalculatorService distanceCalculatorService,
                        MoveMapper moveMapper,
                         ApplicationEventPublisher applicationEventPublisher,
-                       MoveNotificationUserFactory moveNotificationUserFactory
+                       MoveNotificationUserFactory moveNotificationUserFactory,
+                       PaymentService paymentService,
+                       MovingHistoryMapper movingHistoryMapper
                        ) {
 
         this.moveRepository = moveRepository;
@@ -77,6 +88,8 @@ public class MoveService {
         this.moveMapper = moveMapper;
         this.applicationEventPublisher = applicationEventPublisher;
         this.moveNotificationUserFactory = moveNotificationUserFactory;
+        this.paymentService = paymentService;
+        this.movingHistoryMapper = movingHistoryMapper;
 
     }
 
@@ -130,7 +143,7 @@ public class MoveService {
 
     @Transactional
     public Move createMove(MoveRequest moveRequest) {
-        User user = userRepository.findById(moveRequest.getUserId())
+        com.heim.api.users.domain.entity.User user = userRepository.findById(moveRequest.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + moveRequest.getUserId()));
 
         Optional<Move> existingMove = moveRepository.findByUser_UserIdAndOriginAndDestinationAndStatus(
@@ -160,14 +173,12 @@ public class MoveService {
         move.setTypeOfMove(moveRequest.getTypeOfMove());
         move.setPrice(price);
         move.setPaymentMethod(moveRequest.getPaymentMethod());
+        move.setDistanceKm(moveRequest.getDistanceKm());
+        move.setDurationMin(moveRequest.getEstimatedTime());
         move.setRequestTime(LocalDateTime.now());
         move.setStatus(MoveStatus.REQUESTED);
 
         move = moveRepository.save(move);
-
-        // Notificar al conductor que hay un nuevo viaje disponible
-       // notifyDriversAboutNewTrip(trip);
-
         return move;
     }
 
@@ -235,28 +246,81 @@ public class MoveService {
 
         if (moveOptional.isPresent()) {
             Move move = moveOptional.get();
+            com.heim.api.users.domain.entity.User user = move.getUser(); // ✅ Obtener el usuario una vez
             move.setStatus(MoveStatus.MOVE_COMPLETE);
             move.setEndTime(LocalDateTime.now());
 
+            // 1. ✅ Construir el DTO de la solicitud de pago para Wava
+            PaymentRequest paymentRequest = getPaymentRequest(user, move);
+
+            // 2. ✅ Llamar al servicio de pago para obtener la URL
+            String wavaPaymentUrl;
+            try {
+                wavaPaymentUrl = paymentService.createPaymentLink(paymentRequest);
+            } catch (Exception e) {
+                logger.error("Error al generar el link de pago de Wava", e);
+                // Aquí podrías manejar el error, por ejemplo, enviando una notificación
+                wavaPaymentUrl = "https://tuapp.com/pago-fallido";
+            }
+
             moveRepository.save(move);
+
+            // 3. ✅ Actualizar la respuesta del evento con el link dinámico
+            PaymentResponse paymentResponse = getPaymentResponse(move, wavaPaymentUrl);
 
             notificationService.notifyUser(FcmToken.OwnerType.USER, move.getUser().getUserId(), "\uD83C\uDFE1 ¡Tu mudanza fue completada con éxito!",
                     "¡Gracias por confiar en nosotros para este gran paso! Te deseamos lo mejor en tu nuevo hogar. \uD83E\uDDE1");
 
-            PaymentResponse paymentResponse = new PaymentResponse();
-            paymentResponse.setPaymentURL("https://api.wava.co/pay/");
-            paymentResponse.setPaymentMethod(move.getPaymentMethod());
-            paymentResponse.setAmount(move.getPrice());
-            paymentResponse.setCurrency("COP");
-            paymentResponse.setTripId(move.getMoveId());
-
-            MoveFinishedEvent event = new MoveFinishedEvent(move.getMoveId(),paymentResponse);
+            MoveFinishedEvent event = new MoveFinishedEvent(move.getMoveId(), paymentResponse);
             applicationEventPublisher.publishEvent(event);
+            logger.info("ENVIANDO DATOS DE PAGO MEDIANTE WEBSOCKET {}", event);
+
             return move;
         }
 
         return null;
     }
+
+    @NotNull
+    private static PaymentRequest getPaymentRequest(com.heim.api.users.domain.entity.User user, Move move) {
+        PaymentRequest paymentRequest = new PaymentRequest();
+        BigDecimal priceFromDb = move.getPrice();
+      //  BigDecimal amountInPesos = priceFromDb.divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+        BigDecimal priceInPesos = priceFromDb.divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+        BigDecimal roundedPriceInPesos = priceInPesos.setScale(-2, RoundingMode.HALF_UP);
+
+
+        logger.info("PRECIO REAL ENVIADO A WAVA {}",roundedPriceInPesos);
+
+        paymentRequest.setDescription("Servicio de mudanza");
+        paymentRequest.setAmount(roundedPriceInPesos);
+        UserPaymentRequest userRequestPayment = new UserPaymentRequest();
+        userRequestPayment.setFirstName(user.getFullName());
+        userRequestPayment.setEmail(user.getEmail());
+        userRequestPayment.setPhoneNumber(user.getPhone());
+        userRequestPayment.setCountry("CO");
+        userRequestPayment.setIdNumber("CC");
+
+        paymentRequest.setRedirectLink("https://tuapp.com/pago-exitoso");
+        paymentRequest.setUserPaymentRequest(userRequestPayment);
+        paymentRequest.setOrderKey(String.valueOf(move.getMoveId()));
+        return paymentRequest;
+    }
+
+    private PaymentResponse getPaymentResponse(Move move, String wavaPaymentUrl) {
+        PaymentResponse paymentResponse = new PaymentResponse();
+        paymentResponse.setPaymentURL(wavaPaymentUrl); // ✅ Usar el URL dinámico
+        paymentResponse.setPaymentMethod(move.getPaymentMethod());
+        paymentResponse.setAmount(move.getPrice());
+        paymentResponse.setCurrency("COP");
+        paymentResponse.setMoveId(move.getMoveId());
+        paymentResponse.setOrigin(move.getOrigin());
+        paymentResponse.setDestination(move.getDestination());
+        paymentResponse.setDurationMin(move.getDurationMin());
+        paymentResponse.setDistanceKm(move.getDistanceKm());
+        return paymentResponse;
+    }
+
 
     public MoveStatus getMoveStatus(Long moveId) {
         Move move = moveRepository.findById(moveId)
@@ -282,7 +346,7 @@ public class MoveService {
                 message = "Actualización de tu viaje";
         }
 
-        User driverUser = move.getDriver().getUser();
+        com.heim.api.users.domain.entity.User driverUser = move.getDriver().getUser();
 
 
 
@@ -438,7 +502,7 @@ public class MoveService {
 
         if (move.getDriver() != null) {
             Driver driver = move.getDriver();
-            User user = driver.getUser();
+            com.heim.api.users.domain.entity.User user = driver.getUser();
 
             data.put("driverLat", String.valueOf(driverLocation.getLatitude()));
             data.put("driverLng", String.valueOf(driverLocation.getLongitude()));
@@ -457,6 +521,45 @@ public class MoveService {
         return data;
     }
 
+    public List<MovingHistoryDTO> getMovingHistoryByDriverId(Long driverId){
+        List<Move> moves = moveRepository.findByDriverIdAndStatus(driverId,MoveStatus.MOVE_COMPLETE);
+        logger.info("MUDANZAS {}", moves);
+        List<MovingHistoryDTO> historyDto = movingHistoryMapper.toDtoList(moves);
+        return historyDto;
+    }
+
+    public List<MoveSummaryDTO> findAllSummaries (Long driverId){
+        List<Move> moves = moveRepository.findByDriverIdAndStatus(driverId, MoveStatus.MOVE_COMPLETE);
+        return moves.stream()
+                .map(MoveSummaryMapper::toSummaryDTO)
+                .collect(Collectors.toList());
+    }
+
+    public MoveDetailsDTO  findMoveDetails(Long moveId){
+        Move move = moveRepository.findById(moveId)
+                .orElseThrow(() -> new NotFoundException("Mudanza no encontrada"));
+
+        // 2. Crear el DTO y llenarlo con datos de la mudanza
+        MoveDetailsDTO dto = new MoveDetailsDTO();
+        dto.setMoveId(move.getMoveId());
+        dto.setOrigin(move.getOrigin());
+        dto.setDestination(move.getDestination());
+        dto.setAmount(move.getPrice());
+        dto.setPaymentMethod(move.getPaymentMethod());
+        dto.setTypeOfMove(move.getTypeOfMove());
+        dto.setMovingDate(move.getEndTime());
+
+        // 3. Usar el driverId de la mudanza para obtener los datos del conductor
+        driverRepository.findById(move.getDriver().getId()).ifPresent(driver -> {
+            dto.setDriverName(driver.getUser().getFullName());
+            dto.setTypeOfVehicle(driver.getVehicleType());
+
+
+
+        });
+
+        return dto;
+    }
 
 
     public List<Move> getTripsByUser(Long userId) {
