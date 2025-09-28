@@ -88,9 +88,9 @@ public class MoveController {
         return ResponseEntity.ok(history);
     }
 
-    @GetMapping("{driverId}/summary")
-    public List<MoveSummaryDTO> findSummaryMoves(@PathVariable Long driverId){
-      return moveService.findAllSummaries(driverId);
+    @GetMapping("{moveId}/summary")
+    public MoveSummaryDTO movingSummary(@PathVariable Long moveId){
+      return moveService.movingSummary(moveId);
 
     }
 

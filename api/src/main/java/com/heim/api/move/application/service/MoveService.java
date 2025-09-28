@@ -528,12 +528,16 @@ public class MoveService {
         return historyDto;
     }
 
-    public List<MoveSummaryDTO> findAllSummaries (Long driverId){
-        List<Move> moves = moveRepository.findByDriverIdAndStatus(driverId, MoveStatus.MOVE_COMPLETE);
-        return moves.stream()
-                .map(MoveSummaryMapper::toSummaryDTO)
-                .collect(Collectors.toList());
-    }
+  public MoveSummaryDTO movingSummary(Long moveId){
+        Optional<Move> moveOptional = moveRepository.findById(moveId);
+        if (moveOptional.isPresent()){
+            Move move = moveOptional.get();
+            logger.info("DATA MOVING {}",moveOptional);
+            return  MoveSummaryMapper.toSummaryDTO(move);
+        }else {
+            throw new NotFoundException("Mudanza con ID " + moveId + " no encontrada.");
+        }
+  }
 
     public MoveDetailsDTO  findMoveDetails(Long moveId){
         Move move = moveRepository.findById(moveId)

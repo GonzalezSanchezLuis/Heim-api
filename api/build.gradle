@@ -44,6 +44,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'com.konghq:unirest-java:3.14.5'
 
 
 

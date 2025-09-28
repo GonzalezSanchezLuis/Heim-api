@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class MoveNotificationUserResponse {
+    private Long driverId;
     private String driverName;
     private String driverPhone;
     private String enrollVehicle;

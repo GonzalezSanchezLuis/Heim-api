@@ -12,6 +12,7 @@ public class MoveNotificationUserFactory {
         User driverUser = move.getDriver().getUser();
 
         return MoveNotificationUserResponse.builder()
+                .driverId(move.getDriver().getId())
                 .driverName(driverUser.getFullName())
                 .driverPhone(driverUser.getPhone())
                 .driverImageUrl(driverUser.getUrlAvatarProfile())

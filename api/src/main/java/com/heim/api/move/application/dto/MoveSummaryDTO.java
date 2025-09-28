@@ -14,6 +14,7 @@ public class MoveSummaryDTO {
     private BigDecimal amount;
     private String paymentMethod;
     private String duration;
+    private String distance;
     private boolean paymentCompleted;
 
     public void MoveSummaryDto(Move move) {
@@ -23,6 +24,7 @@ public class MoveSummaryDTO {
         this.amount = move.getPrice();
         this.paymentMethod = move.getPaymentMethod();
         this.duration = move.getDurationMin();
+        this.distance = move.getDistanceKm();
         this.paymentCompleted = false;
 
     }
