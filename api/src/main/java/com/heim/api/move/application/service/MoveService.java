@@ -524,9 +524,14 @@ public class MoveService {
     public List<MovingHistoryDTO> getMovingHistoryByDriverId(Long driverId){
         List<Move> moves = moveRepository.findByDriverIdAndStatus(driverId,MoveStatus.MOVE_COMPLETE);
         logger.info("MUDANZAS {}", moves);
-        List<MovingHistoryDTO> historyDto = movingHistoryMapper.toDtoList(moves);
-        return historyDto;
+            return movingHistoryMapper.toDtoList(moves);
     }
+
+    public List<MovingHistoryDTO> getMovingHistoryByUserId(Long userId){
+        List<Move> moves = moveRepository.findByUser_UserIdAndStatus(userId, MoveStatus.MOVE_COMPLETE);
+        return movingHistoryMapper.toDtoList(moves);
+    }
+
 
   public MoveSummaryDTO movingSummary(Long moveId){
         Optional<Move> moveOptional = moveRepository.findById(moveId);

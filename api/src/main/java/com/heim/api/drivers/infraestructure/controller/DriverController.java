@@ -130,7 +130,7 @@ public class DriverController {
         return ResponseEntity.ok(buildResponse(SUCCESS, DISCONNECTED_SUCCESS));
     }
 
-    @GetMapping("/get/status/{driverId}")
+    @GetMapping("/{driverId}/get/status")
     public ResponseEntity<DriverStatusResponse> getDriverStatus(@PathVariable Long driverId) {
         DriverStatusResponse response = driverService.getDriverStatus(driverId);
         return ResponseEntity.ok(response);

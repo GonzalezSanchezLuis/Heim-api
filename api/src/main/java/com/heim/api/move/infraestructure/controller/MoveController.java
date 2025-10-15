@@ -82,17 +82,24 @@ public class MoveController {
         return moveService.getMoveStatus(moveId);
     }
 
-    @GetMapping("{driverId}/history")
-    public ResponseEntity<List<MovingHistoryDTO>> getMovingHistoryByDriverId(@PathVariable Long driverId){
-        List<MovingHistoryDTO> history = moveService.getMovingHistoryByDriverId(driverId);
+    @GetMapping("driver/{id}/history")
+    public ResponseEntity<List<MovingHistoryDTO>> getMovingHistoryByDriverId(@PathVariable Long id){
+        List<MovingHistoryDTO> history = moveService.getMovingHistoryByDriverId(id);
+        return ResponseEntity.ok(history);
+    }
+
+    @GetMapping("/user/{id}/history")
+    public ResponseEntity<List<MovingHistoryDTO>> getMovingHistoryByUserId(@PathVariable Long id){
+        List<MovingHistoryDTO> history = moveService.getMovingHistoryByUserId(id);
         return ResponseEntity.ok(history);
     }
 
     @GetMapping("{moveId}/summary")
     public MoveSummaryDTO movingSummary(@PathVariable Long moveId){
       return moveService.movingSummary(moveId);
-
     }
+
+
 
     @GetMapping("{moveId}/details")
     public ResponseEntity<MoveDetailsDTO> getMoveDetails(@PathVariable Long moveId) {

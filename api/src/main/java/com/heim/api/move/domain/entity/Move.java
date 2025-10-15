@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -43,6 +44,8 @@ public class Move {
 
     @Enumerated(EnumType.STRING)
     private MoveStatus status;
+    private boolean isPaid = false;
+    private LocalDate paymentDate;
 
     @ManyToOne
     @JoinColumn(name = "driver_id")

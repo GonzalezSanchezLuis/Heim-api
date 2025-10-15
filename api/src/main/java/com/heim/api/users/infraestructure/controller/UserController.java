@@ -50,14 +50,11 @@ public class UserController {
     @GetMapping("user/{userId}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long userId) {
         try {
-            // Obtener el usuario usando el servicio
             UserResponse userResponse = userService.getUserById(userId);
             return new ResponseEntity<>(userResponse, HttpStatus.OK);
         } catch (NoSuchElementException e) {
-            // El usuario no se encuentra
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
-            // Error interno
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
