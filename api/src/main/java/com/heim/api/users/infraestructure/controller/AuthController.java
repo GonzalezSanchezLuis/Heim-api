@@ -32,7 +32,6 @@ public class AuthController {
         String email = request.get("email");
         String password = request.get("password");
 
-
         UserResponse userResponse = authService.authenticate(email, password);
         session.setAttribute("userId", userResponse.getUserId());
         session.setAttribute("role", userResponse.getRole());

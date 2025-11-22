@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 
-@SpringBootApplication(scanBasePackages = {"com.heim.api","com.heim.api.exceptions"})
+@SpringBootApplication(scanBasePackages = {"com.heim.api","com.heim.api.exceptions","com.heim.api.admin"})
 //@EnableAsync
 public class HeimApiApplication {
 

@@ -1,6 +1,5 @@
 package com.heim.api.users.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.heim.api.drivers.domain.entity.Driver;
 import com.heim.api.move.domain.entity.Move;
 import jakarta.persistence.*;

@@ -105,7 +105,7 @@ public class DriverController {
         }
     }
 
-    @PutMapping("/connect/{driverId}")
+    @PutMapping("/{driverId}/connect")
     public ResponseEntity<Map<String, String>> updateStatus(@PathVariable Long driverId,
                                                              @RequestBody DriverStatusRequest request) {
         driverService.connectDriver(driverId, request);
@@ -121,7 +121,7 @@ public class DriverController {
     }
 
 
-    @PutMapping("/disconnected/{driverId}")
+    @PutMapping("/{driverId}/disconnected")
     public ResponseEntity<Map<String, String>> disconnectedStatus(@PathVariable Long driverId,
                                                                   @Valid  @RequestBody DriverStatusDisconnectedRequest request) {
         driverService.driverDisconnected(driverId, request);

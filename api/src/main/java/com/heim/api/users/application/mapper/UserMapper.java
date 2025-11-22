@@ -19,7 +19,5 @@ public interface UserMapper {
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "active", source = "active")
     User toEntity(UserRequest userRequest);
-
-
 }
 

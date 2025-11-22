@@ -9,6 +9,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+
 public class Driver {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
@@ -46,11 +48,18 @@ public class Driver {
     @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL)
     private List<Move> trips = new ArrayList<>();
 
+    // Driver.java (sin Lombok)
+
+// ... (métodos y campos) ...
+
     @Override
     public String toString() {
         return "Driver{" +
                 "driverId=" + id +
-                // Omitir la lista de 'reservationMovingList'
+                ", licenseNumber='" + licenseNumber + '\'' +
+                ", vehicleType='" + vehicleType + '\'' +
+                ", enrollVehicle='" + enrollVehicle + '\'' +
+
                 '}';
     }
 

@@ -17,7 +17,6 @@ public class MoveUserSocketEventListener {
     @EventListener
     public void handleMoveAssignedUserEvent(MoveAssignedUserEvent event){
         log.info("Evento MoveAssignedUserEvent disparado para el usuario ID: {}", event.getDriverId());
-        // ¡Cambio aquí! Usar getNotificationPayload()
         moveUserSocketNotificationService.notifyUser(event.getNotificationPayload(), event.getDriverId());
     }
 }

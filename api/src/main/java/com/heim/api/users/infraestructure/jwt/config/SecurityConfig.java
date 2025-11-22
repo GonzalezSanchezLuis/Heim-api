@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 "/api/v1/auth/auth",
                                 "/api/v1/users/register",
                                 "/api/v1/auth/logout",
+                                "/ws/**",
                                 "/api/v1/**").permitAll()
                         .requestMatchers(
                                 "/swagger-ui/**",
