@@ -18,6 +18,8 @@ public class MoveDTO {
     private Double originLng;
     private Double destinationLat;
     private Double destinationLng;
+    private Double driverLat;
+    private Double driverLng;
     private String typeOfMove;
     private BigDecimal price;
     private String paymentMethod;
@@ -30,6 +32,7 @@ public class MoveDTO {
     private String distanceToDestination;
     private String timeToDestination;
     private String avatarProfile;
+    private String fullName;
     private String enrollVehicle;
     private String vehicleType;
     private Long driverId;

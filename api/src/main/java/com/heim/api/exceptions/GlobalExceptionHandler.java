@@ -24,14 +24,10 @@ public class GlobalExceptionHandler{
         return createErrorResponse(userFriendlyMessage, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
-    // 2. Manejo de Email no Encontrado
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Map<String, String>> handleNoSuchElement(NoSuchElementException ex) {
-        String message = "No dudamos que eres tú, pero no reconocemos tu email";
-        return createErrorResponse(message, HttpStatus.NOT_FOUND); // Retorna 404
-    }
 
-    @ExceptionHandler(IncorrectCredentialsException.class)
+    @ExceptionHandler({IncorrectCredentialsException.class,
+                        NotFoundException.class
+    })
     public ResponseEntity<Map<String, String>> handleBadCredentials(IncorrectCredentialsException ex) {
         String message = "No dudamos que eres tú, pero no reconocemos tu contraseña";
         return createErrorResponse(message, HttpStatus.UNAUTHORIZED); // Retorna 401

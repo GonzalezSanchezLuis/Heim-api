@@ -11,8 +11,6 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface MovingHistoryMapper {
-
-    // This method maps a single Move object to a MovingHistoryDTO object.
     @Mapping(source = "driver.enrollVehicle", target = "enrollVehicle")
     @Mapping(source = "driver.user.fullName", target = "name")
     @Mapping(source = "driver.user.urlAvatarProfile", target = "avatar")
@@ -21,7 +19,5 @@ public interface MovingHistoryMapper {
     @Mapping(source = "destination", target = "destination")
     MovingHistoryDTO toDto(Move move);
 
-    // This is the method you are missing. MapStruct will generate the code
-    // to iterate over the list and call the `toDto` method for each item.
     List<MovingHistoryDTO> toDtoList(List<Move> moves);
 }

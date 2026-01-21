@@ -1,0 +1,13 @@
+package com.heim.api.move.application.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class RestoreMoveRequestDTO {
+    private Long moveId;
+    private Long driverId;
+}

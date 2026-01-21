@@ -78,21 +78,18 @@ public class DriverService {
         return driverMapper.toResponse(savedDriver);
     }
 
-    public DriverResponse getDriverById(Long driverId) throws NoSuchElementException {
-        Driver driver = driverRepository.findById(driverId).orElseThrow(() -> new NoSuchElementException("Usuario no encontrado"));
+    public DriverResponse getDriverById(Long userId) throws NoSuchElementException {
+        Driver driver = driverRepository.findByUserId(userId)
+                .orElseThrow(() -> new NoSuchElementException("Conductor no encontrado para el usuario con ID: " + userId));
+
         return driverMapper.toResponse(driver);
     }
 
     public DriverResponse updatedDriverData(Long driverId, DriverRequest driverRequest) {
-        // Buscar el usuario por ID
         Driver driver = driverRepository.findById(driverId).orElseThrow(() -> new NoSuchElementException("Usuario no encontrado"));
-
 
         driver.setVehicleType(driverRequest.getVehicleType());
         driver.setEnrollVehicle(driverRequest.getEnrollVehicle());
-
-
-
         driverRepository.save(driver);
         return driverMapper.toResponse(driver);
     }
@@ -106,26 +103,23 @@ public class DriverService {
 
 
 
-    public void connectDriver(Long driverId, DriverStatusRequest request) {
-        Driver driver = findDriverById(driverId);
+    public void connectDriver(Long userId, DriverStatusRequest request) {
+        Driver driver = findDriverByUserId(userId);
 
         driver.setStatus(DriverStatus.CONNECTED);
         driverRepository.save(driver);
 
         logger.info("📡 Estado del conductor actualizado: {}", driver);
-
-        // Manejar la ubicación en Hazelcast según el estado del conductor
-        handleDriverLocation(driverId, DriverStatus.CONNECTED, request.getLatitude(), request.getLongitude());
+        handleDriverLocation(driver.getId(), DriverStatus.CONNECTED, request.getLatitude(), request.getLongitude());
 
     }
 
     public void driverDisconnected(Long driverId, DriverStatusDisconnectedRequest request) {
-        Driver driver = findDriverById(driverId);
+        Driver driver = findDriverByUserId(driverId);
 
         driver.setStatus(DriverStatus.DISCONNECTED);
         driverRepository.save(driver);
 
-        // Llamar a handleDriverLocation para manejar la ubicación
         handleDriverLocation(driverId, DriverStatus.DISCONNECTED, null, null);
 
         logger.info("🔴 Conductor {} desconectado", driverId);
@@ -133,8 +127,8 @@ public class DriverService {
     }
 
 
-    private Driver findDriverById(Long driverId) {
-        return driverRepository.findById(driverId)
+    private Driver findDriverByUserId(Long userId) {
+        return driverRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Driver not found"));
     }
 

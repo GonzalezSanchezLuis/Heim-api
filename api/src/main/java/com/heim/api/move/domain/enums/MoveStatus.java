@@ -7,5 +7,4 @@ public enum MoveStatus {
     DRIVER_ARRIVED,
     MOVING_STARTED,
     MOVE_COMPLETE
-
 }

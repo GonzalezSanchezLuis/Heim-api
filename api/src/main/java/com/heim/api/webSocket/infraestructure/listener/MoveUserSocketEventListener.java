@@ -1,16 +1,16 @@
 package com.heim.api.webSocket.infraestructure.listener;
 
 import com.heim.api.webSocket.domain.entity.event.MoveAssignedUserEvent;
-import com.heim.api.webSocket.service.MoveUserSocketNotificationService;
+import com.heim.api.webSocket.service.WebSocketUserChannelService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 public class MoveUserSocketEventListener {
-    private final MoveUserSocketNotificationService moveUserSocketNotificationService;
+    private final WebSocketUserChannelService moveUserSocketNotificationService;
 
-    public MoveUserSocketEventListener(MoveUserSocketNotificationService moveUserSocketNotificationService) {
+    public MoveUserSocketEventListener(WebSocketUserChannelService moveUserSocketNotificationService) {
         this.moveUserSocketNotificationService = moveUserSocketNotificationService;
     }
 

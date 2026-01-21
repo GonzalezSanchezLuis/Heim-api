@@ -15,7 +15,7 @@ public interface UserMapper {
     @Mapping(target = "active", source = "active")
     UserResponse toResponse(User user);
 
-    @Mapping(target = "userId", ignore = true) // Se ignora porque es autogenerado
+    @Mapping(target = "userId", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "active", source = "active")
     User toEntity(UserRequest userRequest);

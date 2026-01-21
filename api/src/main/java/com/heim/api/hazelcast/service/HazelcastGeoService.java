@@ -73,7 +73,7 @@ public class HazelcastGeoService {
 
 
         List<Long> drivers = driverLocations.entrySet().stream()
-                .filter(entry -> connectedDrivers.contains(entry.getKey()))  // Filtro más eficiente
+                .filter(entry -> connectedDrivers.contains(entry.getKey()))
                 .filter(entry -> {
                     GeoLocation loc = entry.getValue();
                     double dist = distance(loc, latitude, longitude);

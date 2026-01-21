@@ -75,7 +75,8 @@ public class PriceService {
 
             MoveType moveType = priceRequest.getTypeOfMove();
             double calculatedPrice = calculatePriceByMoveType(moveType, distanceKm, timeMin);
-            BigDecimal finalPrice = BigDecimal.valueOf(calculatedPrice).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal rawPrice = BigDecimal.valueOf(calculatedPrice);
+            BigDecimal roundedPrice = rawPrice.divide(new BigDecimal("100"), 0,RoundingMode.HALF_UP).multiply(new BigDecimal("100"));
 
             // 2. Obtener ruta detallada con Directions API
             String directionsUrl = "https://maps.googleapis.com/maps/api/directions/json" +
@@ -118,7 +119,8 @@ public class PriceService {
             }
 
           //  System.out.println("RUTAS: " + route);
-            return new PriceResponse(finalPrice, distanceKm, timeMin, route);
+            System.out.println("PRECIO DE LA MUDANZA" + roundedPrice);
+            return new PriceResponse(roundedPrice, distanceKm, timeMin, route);
 
         } catch (Exception e) {
             System.out.println("Error al calcular el precio: " + e.getMessage());

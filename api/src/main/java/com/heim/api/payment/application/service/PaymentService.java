@@ -22,9 +22,10 @@ public class PaymentService {
 
     public String createPaymentLink(PaymentRequest paymentRequest) throws Exception {
         String json = objectMapper.writeValueAsString(paymentRequest);
+        PaymentRequest requestP = new PaymentRequest();
+
 
         RequestBody body = RequestBody.create(json, MediaType.parse("application/json"));
-
         Request request = new Request.Builder()
                 .url(wavaApiUrl)
                 .post(body)

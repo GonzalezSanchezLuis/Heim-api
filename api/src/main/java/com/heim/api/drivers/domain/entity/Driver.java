@@ -25,7 +25,9 @@ public class Driver {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
+    private String document;
     private String  licenseNumber;
+    private String licenseCategory;
     private String  vehicleType;
     private String  enrollVehicle;
     private LocalDateTime createdAt;
@@ -47,10 +49,6 @@ public class Driver {
 
     @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL)
     private List<Move> trips = new ArrayList<>();
-
-    // Driver.java (sin Lombok)
-
-// ... (métodos y campos) ...
 
     @Override
     public String toString() {

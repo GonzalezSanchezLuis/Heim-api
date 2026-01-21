@@ -4,6 +4,7 @@ package com.heim.api.move.domain.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.heim.api.drivers.domain.entity.Driver;
 import com.heim.api.move.domain.enums.MoveStatus;
+import com.heim.api.payment.domain.PaymentStatus;
 import com.heim.api.price.domain.MoveType;
 import com.heim.api.users.domain.entity.User;
 import jakarta.persistence.*;
@@ -44,8 +45,9 @@ public class Move {
 
     @Enumerated(EnumType.STRING)
     private MoveStatus status;
-    private boolean isPaid = false;
-    private LocalDate paymentDate;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
 
     @ManyToOne
     @JoinColumn(name = "driver_id")

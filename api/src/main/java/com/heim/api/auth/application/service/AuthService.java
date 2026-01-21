@@ -34,13 +34,13 @@ public class AuthService {
             Optional<User> userOptional = userRepository.findByEmail(email);
 
             if (userOptional.isEmpty()) {
-                throw new NoSuchElementException("emailNotFound");
+                throw new IncorrectCredentialsException("Invalid credentials provided.");
             }
 
             User user = userOptional.get();
 
             if (!passwordEncoder.matches(password, user.getPassword())) {
-                throw new IncorrectCredentialsException("passwordIncorrect");
+                throw new IncorrectCredentialsException("Invalid credentials provided.");
             }
 
             return userMapper.toResponse(user);

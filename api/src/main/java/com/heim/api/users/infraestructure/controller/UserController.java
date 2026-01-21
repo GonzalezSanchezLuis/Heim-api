@@ -1,5 +1,6 @@
 package com.heim.api.users.infraestructure.controller;
 
+import com.heim.api.auth.application.service.EmailService;
 import com.heim.api.users.application.dto.UserRequest;
 import com.heim.api.users.application.dto.UserResponse;
 import com.heim.api.users.application.service.UserService;
@@ -18,10 +19,12 @@ import java.util.NoSuchElementException;
 @RequestMapping("/api/v1/users/")
 public class UserController {
     private final UserService userService;
+    private final EmailService emailService;
 
     @Autowired
-    public  UserController(UserService userService){
+    public  UserController(UserService userService, EmailService emailService){
         this.userService = userService;
+        this.emailService = emailService;
     }
 
     @PostMapping("register")
@@ -29,10 +32,7 @@ public class UserController {
         System.out.println("Solicitud recibida: " + userRequest);
         try {
             UserResponse registerUser = userService.registerUser(userRequest);
-
-           /* String token = jwtUtils.generateToken(registerUser.getEmail());
-            UserRegistrationResponse response = new UserRegistrationResponse(registerUser, token); */
-
+            emailService.sendWelcomeEmail(registerUser.getEmail(), registerUser.getFullName());
             return ResponseEntity.ok(registerUser);
         } catch (EmailAlreadyRegisteredException e) {
             Map<String, String> errorResponse = new HashMap<>();
@@ -70,13 +70,10 @@ public class UserController {
 
             return new ResponseEntity<>(updatedUser, HttpStatus.OK);
         } catch (NoSuchElementException e) {
-            // Si el usuario no se encuentra
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         } catch (IllegalArgumentException e) {
-            // En caso de que haya algún error con los datos (por ejemplo, email duplicado)
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            // Error interno
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

@@ -25,7 +25,6 @@ public class FcmTokenService {
             throw new IllegalArgumentException("El propietario no existe.");
         }
 
-        // Verificar si ya existe el token
         tokenRepository.findByToken(request.getToken()).ifPresent(existing -> {
             throw new IllegalStateException("Este token ya está registrado.");
         });

@@ -19,7 +19,6 @@ public interface DriverMapper {
     @Mapping(target = "active", source = "user.active")
     @Mapping(target = "createdAt", source = "createdAt")
     DriverResponse toResponse(Driver driver);
-
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "status", ignore = true)

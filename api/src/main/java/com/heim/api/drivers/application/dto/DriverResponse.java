@@ -20,7 +20,7 @@ public class DriverResponse {
     private String urlAvatarProfile;
     private String role;
     private LocalDateTime createdAt;
-    private boolean isActive;
+    private boolean active;
     private String status;
 
 

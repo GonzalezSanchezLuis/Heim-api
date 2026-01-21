@@ -11,7 +11,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class EarningsDTO {
     private Long driverId;
-    private BigDecimal currentEarnedBalance;
+    private BigDecimal availableBalance;
+    private BigDecimal pendingBalance;
     private LocalDate lastPaymentDate;
     private LocalDate nextPaymentDate;
 }

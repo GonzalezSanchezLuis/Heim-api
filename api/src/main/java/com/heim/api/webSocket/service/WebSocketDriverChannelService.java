@@ -6,18 +6,18 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MoveSocketNotificationService {
+public class WebSocketDriverChannelService {
     private final SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-    public MoveSocketNotificationService(SimpMessagingTemplate messagingTemplate) {
+    public WebSocketDriverChannelService(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
     }
 
-    public void notifyDriver(MoveNotificationDTO moveNotificationDTO) {
-        System.out.println("Enviando notificación al canal: /topic/driver/available" + moveNotificationDTO.getMove().getDriverId());
+    public void notifyDriver(MoveNotificationDTO moveNotificationDTO, Long userIdToNotify) {
+        String destination = "/topic/driver/available/" + userIdToNotify;
 
-        String destination = "/topic/driver/available";
+        System.out.println("Enviando notificación al canal: " + destination);
         messagingTemplate.convertAndSend(destination, moveNotificationDTO);
     }
 }

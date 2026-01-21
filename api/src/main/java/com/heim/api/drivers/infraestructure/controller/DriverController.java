@@ -19,7 +19,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/drivers")
+@RequestMapping("/api/v1/drivers/")
 @CrossOrigin("*")
 public class DriverController {
     private static final Logger logger = LoggerFactory.getLogger(DriverController.class);
@@ -56,22 +56,20 @@ public class DriverController {
         }
     }
 
-    @GetMapping("/driver/{driverId}")
-    public ResponseEntity<DriverResponse> getDriverById(@PathVariable Long driverId) {
+    @GetMapping("{userId}/driver")
+    public ResponseEntity<?> getDriverById(@PathVariable Long userId) {
         try {
-            // Obtener el usuario usando el servicio
-            DriverResponse driverResponse = driverService.getDriverById(driverId);
+            DriverResponse driverResponse = driverService.getDriverById(userId);
             return new ResponseEntity<>(driverResponse, HttpStatus.OK);
         } catch (NoSuchElementException e) {
-            // El usuario no se encuentra
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+            return  ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             // Error interno
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @PutMapping("/update/{driverId}")
+    @PutMapping("update/{driverId}")
     public ResponseEntity<DriverResponse> updatedDriverData(@PathVariable Long driverId, @RequestBody DriverRequest driverRequest) {
         try {
             if (driverRequest == null) {
@@ -93,7 +91,7 @@ public class DriverController {
         }
     }
 
-    @DeleteMapping("/delete/{driverId}")
+    @DeleteMapping("delete/{driverId}")
     public ResponseEntity<String> driverDelete(@PathVariable Long driverId) {
         try {
             driverService.driverDelete(driverId);
@@ -105,7 +103,7 @@ public class DriverController {
         }
     }
 
-    @PutMapping("/{driverId}/connect")
+    @PutMapping("{driverId}/connect")
     public ResponseEntity<Map<String, String>> updateStatus(@PathVariable Long driverId,
                                                              @RequestBody DriverStatusRequest request) {
         driverService.connectDriver(driverId, request);
@@ -113,7 +111,7 @@ public class DriverController {
         return ResponseEntity.ok(buildResponse(SUCCESS, STATUS_UPDATED));
     }
 
-    @PutMapping("/location/{driverId}")
+    @PutMapping("{driverId}/location")
     public ResponseEntity<Map<String, String>> updateDriverLocation(@RequestBody DriverUpdateLocationRequest request,@PathVariable Long driverId) {
         driverService.updateDriverLocation(request, driverId);
         logger.info("📍 Ubicación actualizada para el conductor {}", driverId);
@@ -121,7 +119,7 @@ public class DriverController {
     }
 
 
-    @PutMapping("/{driverId}/disconnected")
+    @PutMapping("{driverId}/disconnected")
     public ResponseEntity<Map<String, String>> disconnectedStatus(@PathVariable Long driverId,
                                                                   @Valid  @RequestBody DriverStatusDisconnectedRequest request) {
         driverService.driverDisconnected(driverId, request);
@@ -130,7 +128,7 @@ public class DriverController {
         return ResponseEntity.ok(buildResponse(SUCCESS, DISCONNECTED_SUCCESS));
     }
 
-    @GetMapping("/{driverId}/get/status")
+    @GetMapping("{driverId}/get/status")
     public ResponseEntity<DriverStatusResponse> getDriverStatus(@PathVariable Long driverId) {
         DriverStatusResponse response = driverService.getDriverStatus(driverId);
         return ResponseEntity.ok(response);
@@ -138,7 +136,7 @@ public class DriverController {
 
 
 
-    @GetMapping("/driver/trip/{tripId}")
+    @GetMapping("driver/trip/{tripId}")
     public ResponseEntity<Move> getTripForDriver(@PathVariable Long tripId, @RequestParam Long driverId ){
         Optional<Move> tripOptional = tripService.getTripForDriver(tripId, driverId);
         return tripOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());

@@ -7,4 +7,5 @@ import lombok.Data;
 @Data
 public class MoveAssignedEvent {
     private final MoveNotificationDTO notification;
+    private final Long userId;
 }

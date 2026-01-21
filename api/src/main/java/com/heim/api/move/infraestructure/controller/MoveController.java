@@ -1,10 +1,12 @@
 package com.heim.api.move.infraestructure.controller;
 
 import com.heim.api.move.application.dto.*;
+import com.heim.api.move.application.service.RestoreMoveService;
 import com.heim.api.move.application.service.MoveService;
 import com.heim.api.move.domain.entity.Move;
 import com.heim.api.move.domain.enums.MoveStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,10 +18,15 @@ import java.util.List;
 public class MoveController {
 
     private final MoveService moveService;
+    private final RestoreMoveService restoreMoveService;
+
 
     @Autowired
-    public MoveController(MoveService moveService) {
+    public MoveController(
+            MoveService moveService,
+            RestoreMoveService restoreMoveService) {
         this.moveService = moveService;
+        this.restoreMoveService = restoreMoveService;
     }
 
     @PostMapping("confirm")
@@ -37,7 +44,7 @@ public class MoveController {
     }
 
 
-    @PutMapping("accept/{moveId}")
+    @PutMapping("{moveId}/accept")
     public ResponseEntity<MoveDTO> assignDriver(@PathVariable Long moveId, @RequestBody AcceptMoveRequest acceptMoveRequest) {
         acceptMoveRequest.setMoveId(moveId);
         MoveDTO moveDTO = moveService.assignDriverToMove(acceptMoveRequest);
@@ -45,8 +52,8 @@ public class MoveController {
     }
 
     @PatchMapping("driver-arrived")
-    public ResponseEntity<String> updateMoveStatus(@RequestBody MovingStatusesDTO movingStatusesDTO){
-        if (movingStatusesDTO.getMoveId() == null || movingStatusesDTO.getDriverId() == null){
+    public ResponseEntity<String> updateMoveStatus(@RequestBody MovingStatusesDTO movingStatusesDTO) {
+        if (movingStatusesDTO.getMoveId() == null || movingStatusesDTO.getDriverId() == null) {
             return ResponseEntity.badRequest().body("Faltan datos obligatorios");
         }
 
@@ -64,12 +71,12 @@ public class MoveController {
     }
 
     @PatchMapping("start")
-    public ResponseEntity<String> starMove(@RequestBody MovingStatusesDTO movingStatusesDTO){
+    public ResponseEntity<String> starMove(@RequestBody MovingStatusesDTO movingStatusesDTO) {
         moveService.startMove(movingStatusesDTO);
-        return  ResponseEntity.ok("Mudanza iniciada");
+        return ResponseEntity.ok("Mudanza iniciada");
     }
 
-    
+
     @PatchMapping("complete")
     public ResponseEntity<Move> completeTrip(@RequestBody MovingStatusesDTO movingStatusesDTO) {
         Move move = moveService.completeMove(movingStatusesDTO);
@@ -78,25 +85,25 @@ public class MoveController {
 
 
     @GetMapping("get-status/{moveId}")
-    public MoveStatus getMOveStatus(@PathVariable Long moveId){
+    public MoveStatus getMOveStatus(@PathVariable Long moveId) {
         return moveService.getMoveStatus(moveId);
     }
 
     @GetMapping("driver/{id}/history")
-    public ResponseEntity<List<MovingHistoryDTO>> getMovingHistoryByDriverId(@PathVariable Long id){
+    public ResponseEntity<List<MovingHistoryDTO>> getMovingHistoryByDriverId(@PathVariable Long id) {
         List<MovingHistoryDTO> history = moveService.getMovingHistoryByDriverId(id);
         return ResponseEntity.ok(history);
     }
 
-    @GetMapping("/user/{id}/history")
-    public ResponseEntity<List<MovingHistoryDTO>> getMovingHistoryByUserId(@PathVariable Long id){
+    @GetMapping("user/{id}/history")
+    public ResponseEntity<List<MovingHistoryDTO>> getMovingHistoryByUserId(@PathVariable Long id) {
         List<MovingHistoryDTO> history = moveService.getMovingHistoryByUserId(id);
         return ResponseEntity.ok(history);
     }
 
     @GetMapping("{moveId}/summary")
-    public MoveSummaryDTO movingSummary(@PathVariable Long moveId){
-      return moveService.movingSummary(moveId);
+    public MoveSummaryDTO movingSummary(@PathVariable Long moveId) {
+        return moveService.movingSummary(moveId);
     }
 
 
@@ -107,6 +114,22 @@ public class MoveController {
         // Retorna un 200 OK con el DTO en el cuerpo de la respuesta
         return ResponseEntity.ok(details);
     }
+
+    @GetMapping("{moveId}/restore-move")
+    public ResponseEntity<RestoreMoveResponseDTO> getActiveMove(
+            @PathVariable Long moveId,
+            @RequestBody RestoreMoveRequestDTO activeMoveRequestDTO
+    ) {
+        try {
+            Long driverId = activeMoveRequestDTO.getDriverId();
+            return restoreMoveService.getActiveMoveForDriver(driverId, moveId)
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.noContent().build());
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 }
 
