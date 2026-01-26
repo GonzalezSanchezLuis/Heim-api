@@ -39,4 +39,8 @@ out/
 ## Idea ##
 .idea/
 
+# FCM
+api/src/main/resources/holi-10c28-firebase-adminsdk-fbsvc-0a976d9ee8.json
+
+
 
