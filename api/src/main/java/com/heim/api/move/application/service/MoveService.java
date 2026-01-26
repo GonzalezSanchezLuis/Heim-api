@@ -297,9 +297,6 @@ public class MoveService {
     private static PaymentRequest getPaymentRequest(com.heim.api.users.domain.entity.User user, Move move) {
         PaymentRequest paymentRequest = new PaymentRequest();
         BigDecimal priceFromDb = move.getPrice();
-      //  BigDecimal amountInPesos = priceFromDb.divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-       // BigDecimal priceInPesos = priceFromDb.divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-       // BigDecimal roundedPriceInPesos = priceInPesos.setScale(-2, RoundingMode.HALF_UP);
         BigDecimal finalPrice = priceFromDb.setScale(0, RoundingMode.HALF_UP);
 
 
@@ -377,7 +374,7 @@ public class MoveService {
             moveNotification.setDriverLng(driverLocation.getLongitude());
         }
         applicationEventPublisher.publishEvent(new MoveAssignedUserEvent(moveNotification, move.getUser().getUserId()));
-        logger.info("Enviando datos el cliente por WEBSOCKET: {}",moveNotification);
+        logger.info("Enviando datos al usuario por WEBSOCKET: {}",moveNotification);
     }
 
     private void notifyDriversLimited(Move move, List<Long> nearbyDrivers){
@@ -521,6 +518,7 @@ public class MoveService {
         Map<String, String> data = new HashMap<>();
         data.put("moveId", move.getMoveId().toString());
         data.put("status", move.getStatus().toString());
+
 
         if (move.getDriver() != null) {
             Driver driver = move.getDriver();

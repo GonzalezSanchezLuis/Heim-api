@@ -17,7 +17,8 @@ public class MoveNotificationUserResponse {
     private String vehicleType;
     private String driverImageUrl;
     private Long moveId;
-
+    private String origin;
+    private String destination;
     private Double driverLat;
     private Double driverLng;
 }

@@ -24,7 +24,7 @@ public class FirebaseConfig {
     @PostConstruct
     public void initializeFirebase(){
         try {
-            InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream(firebaseAdminCredentials);
+            InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream("holi-10c28-firebase-adminsdk-fbsvc-0a976d9ee8.json");
             log.info("✅ Se está inicializando Firebase...");
             if (serviceAccount == null){
                 throw new IllegalStateException("No se pudo cargar el archivo holi-10c28-firebase-adminsdk-fbsvc-0a976d9ee8.json");

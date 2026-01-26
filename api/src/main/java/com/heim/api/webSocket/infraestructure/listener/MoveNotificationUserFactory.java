@@ -12,6 +12,7 @@ public class MoveNotificationUserFactory {
         User driverUser = move.getDriver().getUser();
 
         return MoveNotificationUserResponse.builder()
+
                 .driverId(move.getDriver().getId())
                 .driverName(driverUser.getFullName())
                 .driverPhone(driverUser.getPhone())
@@ -19,6 +20,8 @@ public class MoveNotificationUserFactory {
                 .enrollVehicle(move.getDriver().getEnrollVehicle())
                 .vehicleType(move.getDriver().getVehicleType())
                 .moveId(move.getMoveId())
+                .origin(move.getOrigin())
+                .destination(move.getDestination())
                 .build();
     }
 }

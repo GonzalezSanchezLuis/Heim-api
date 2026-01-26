@@ -17,7 +17,7 @@ public class HazelcastConfig {
                 .addMapConfig(new MapConfig()
                         .setName("driver-locations")
                         .setEvictionConfig(new EvictionConfig()
-                                .setSize(200)  // Máximo 200 registros
+                                .setSize(200)
                                 .setMaxSizePolicy(MaxSizePolicy.USED_HEAP_SIZE))
                         .setTimeToLiveSeconds(3600)); // Datos expiran en 1 hora
     }

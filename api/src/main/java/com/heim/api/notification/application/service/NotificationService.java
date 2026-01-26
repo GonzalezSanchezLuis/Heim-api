@@ -3,7 +3,7 @@ package com.heim.api.notification.application.service;
 import com.heim.api.fcm.domain.entity.FcmToken;
 import com.heim.api.fcm.infraestructure.repository.FcmTokenRepository;
 import com.heim.api.notification.infraestructure.firebase.FirebaseNotificationSender;
-import com.heim.api.payment.domain.PaymentStatus;
+import com.heim.api.payment.domain.enums.PayoutStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,10 +26,10 @@ public class NotificationService {
 
     public void paymentNotification(FcmToken.OwnerType ownerType,
                                     Long ownerId,
-                                    PaymentStatus status,
+                                    PayoutStatus status,
                                     BigDecimal amount) {
 
-        String title =  status == PaymentStatus.APPROVED ? "Pago aprobado" : status == PaymentStatus.DECLINED ?
+        String title =  status == PayoutStatus.APPROVED ? "Pago aprobado" : status == PayoutStatus.DECLINED ?
                 "Pago rechazado" : "Pago pendiente";
         String description  = "Tu servicio de Mudanza";
         String body = description + " fue " + status.name().toLowerCase() + "por valor de " + amount + " COP" + " "+ ".";
